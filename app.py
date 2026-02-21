@@ -13,7 +13,10 @@ if uploaded_file:
     st.dataframe(df)
 
     # Supozojmë që CSV ka kolonë 'Match' dhe 'Odd'
-    low_odds = df[df['Odd'] <= 1.30]
+   import streamlit as st
+
+st.write("Kolonat ne DataFrame jane:")
+st.write(df.columns.tolist()) low_odds = df[df['Odd'] <= 1.30]
     high_odds = df[df['Odd'] >= 2.80]
 
     if len(low_odds) >= 3 and len(high_odds) >= 1:
