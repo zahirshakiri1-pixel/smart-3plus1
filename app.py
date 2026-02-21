@@ -1,27 +1,44 @@
 import streamlit as st
 import pandas as pd
+import itertools
 
-st.title("Smart 3+1 System Generator")
+st.title("Smart 3+1 Auto Generator (Mozzart CSV)")
 
-st.write("Vendos 4 ndeshje me kuotat përkatëse")
+uploaded_file = st.file_uploader("Ngarko CSV nga Mozzart", type=["csv"])
 
-match1 = st.number_input("Kuota Ndeshja 1", min_value=1.00, step=0.01)
-match2 = st.number_input("Kuota Ndeshja 2", min_value=1.00, step=0.01)
-match3 = st.number_input("Kuota Ndeshja 3", min_value=1.00, step=0.01)
-match4 = st.number_input("Kuota Ndeshja 4 (High odd)", min_value=1.00, step=0.01)
+if uploaded_file:
+    df = pd.read_csv(uploaded_file)
 
-if st.button("Gjenero Sistem"):
-    total_full = match1 * match2 * match3 * match4
-    
-    comb1 = match1 * match2 * match3
-    comb2 = match1 * match2 * match4
-    comb3 = match1 * match3 * match4
-    comb4 = match2 * match3 * match4
-    
-    st.subheader("Rezultatet")
-    st.write(f"Kombinimi i plotë: {total_full:.2f}")
-    st.write("Sistemi 3 nga 4:")
-    st.write(f"Kombinimi 1: {comb1:.2f}")
-    st.write(f"Kombinimi 2: {comb2:.2f}")
-    st.write(f"Kombinimi 3: {comb3:.2f}")
-    st.write(f"Kombinimi 4: {comb4:.2f}")
+    st.write("Preview i të dhënave:")
+    st.dataframe(df)
+
+    # Supozojmë që CSV ka kolonë 'Match' dhe 'Odd'
+    low_odds = df[df['Odd'] <= 1.30]
+    high_odds = df[df['Odd'] >= 2.80]
+
+    if len(low_odds) >= 3 and len(high_odds) >= 1:
+        selected_low = low_odds.head(3)
+        selected_high = high_odds.head(1)
+
+        final_matches = pd.concat([selected_low, selected_high])
+
+        st.subheader("4 Ndeshjet e Zgjedhura:")
+        st.dataframe(final_matches)
+
+        odds_list = final_matches['Odd'].tolist()
+
+        st.subheader("Sistemi 3/4:")
+        for combo in itertools.combinations(odds_list, 3):
+            total = 1
+            for odd in combo:
+                total *= odd
+            st.write(combo, "=", round(total, 2))
+
+        st.subheader("Sistemi 4/4:")
+        total_4 = 1
+        for odd in odds_list:
+            total_4 *= odd
+        st.write("4/4 =", round(total_4, 2))
+
+    else:
+        st.warning("Nuk ka mjaftueshëm ndeshje sipas kriterit.")
